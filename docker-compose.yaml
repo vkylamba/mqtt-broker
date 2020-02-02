@@ -1,0 +1,18 @@
+version: "3"
+services:
+  app:
+    build: .
+    volumes:
+      - ./src:/app
+      - app-python-site-packages:/usr/local/lib/python3.8
+      - app-usr-local-bin:/usr/local/bin
+    command: "tail -f /dev/null"
+    working_dir: /app
+    ports:
+      - 9024:9024
+
+volumes:
+  app-python-site-packages:
+    driver: local
+  app-usr-local-bin:
+    driver: local
