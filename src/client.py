@@ -1,10 +1,13 @@
+import os
 import paho.mqtt.client as mqtt
 
-CLIENT_NAME = 'test client'
-CLIENT_IP = 'x.z.r.d'
-CLIENT_RESPONSE_TOPIC = 'CLIENT_RESPONSE'
-CLIENT_COMMAND_TOPIC = 'CLIENT_COMMAND'
-CLIENT_CONNECTED_TOPIC = 'CLIENT_CONNECTED'
+MQTT_HOST = os.getenv("MQTT_HOST")
+MQTT_PORT = os.getenv("MQTT_PORT")
+CLIENT_NAME = os.getenv("CLIENT_NAME")
+CLIENT_IP = os.getenv("CLIENT_IP")
+CLIENT_RESPONSE_TOPIC = os.getenv("CLIENT_RESPONSE_TOPIC")
+CLIENT_COMMAND_TOPIC = os.getenv("CLIENT_COMMAND_TOPIC")
+CLIENT_CONNECTED_TOPIC = os.getenv("CLIENT_CONNECTED_TOPIC")
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -26,7 +29,7 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("localhost", 9024, 60)
+client.connect(MQTT_HOST, MQTT_PORT, 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.

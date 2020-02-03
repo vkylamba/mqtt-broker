@@ -10,6 +10,7 @@ services:
     working_dir: /app
     ports:
       - 9024:9024
+    env_file: .env
 
 volumes:
   app-python-site-packages:
