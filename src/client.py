@@ -1,5 +1,6 @@
 import logging
 import os
+import socket
 
 import dotenv
 import paho.mqtt.client as mqtt
@@ -24,7 +25,9 @@ def on_connect(client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     # client.subscribe("$SYS/#")
     client.subscribe(CLIENT_COMMAND_TOPIC)
-    message = "{}-{}".format(TEST_CLIENT_NAME, TEST_CLIENT_IP)
+    hostname = socket.gethostname()    
+    ip_address = socket.gethostbyname(hostname)    
+    message = "{}-{}".format(TEST_CLIENT_NAME, ip_address)
     client.publish(CLIENT_CONNECTED_TOPIC, message)
 
 # The callback for when a PUBLISH message is received from the server.
