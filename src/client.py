@@ -17,6 +17,7 @@ CLIENT_COMMAND_TOPIC = os.getenv("CLIENT_COMMAND_TOPIC")
 CLIENT_CONNECTED_TOPIC = os.getenv("CLIENT_CONNECTED_TOPIC")
 
 logger = logging.getLogger(__name__)
+# logger.info = print
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -25,8 +26,8 @@ def on_connect(client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     # client.subscribe("$SYS/#")
     client.subscribe(CLIENT_COMMAND_TOPIC)
-    hostname = socket.gethostname()    
-    ip_address = socket.gethostbyname(hostname)    
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
     message = "{}-{}".format(TEST_CLIENT_NAME, ip_address)
     client.publish(CLIENT_CONNECTED_TOPIC, message)
 
