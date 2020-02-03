@@ -1,29 +1,35 @@
 import os
+import logging
 import paho.mqtt.client as mqtt
+import dotenv
+
+dotenv.load_dotenv()
 
 MQTT_HOST = os.getenv("MQTT_HOST")
-MQTT_PORT = os.getenv("MQTT_PORT")
-CLIENT_NAME = os.getenv("CLIENT_NAME")
-CLIENT_IP = os.getenv("CLIENT_IP")
+MQTT_PORT = int(os.getenv("MQTT_PORT"))
+TEST_CLIENT_NAME = os.getenv("TEST_CLIENT_NAME")
+TEST_CLIENT_IP = os.getenv("TEST_CLIENT_IP")
 CLIENT_RESPONSE_TOPIC = os.getenv("CLIENT_RESPONSE_TOPIC")
 CLIENT_COMMAND_TOPIC = os.getenv("CLIENT_COMMAND_TOPIC")
 CLIENT_CONNECTED_TOPIC = os.getenv("CLIENT_CONNECTED_TOPIC")
 
+logger = logging.getLogger(__name__)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
-
+    logger.info("Connected with result code %s" % str(rc))
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     # client.subscribe("$SYS/#")
     client.subscribe(CLIENT_COMMAND_TOPIC)
-    client.publish(CLIENT_CONNECTED_TOPIC, f"{CLIENT_NAME}-{CLIENT_IP}")
+    message = "{}-{}".format(TEST_CLIENT_NAME, TEST_CLIENT_IP)
+    client.publish(CLIENT_CONNECTED_TOPIC, message)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
-    client.publish(CLIENT_RESPONSE_TOPIC, f"{CLIENT_NAME}-{CLIENT_IP}")
+    logger.info(msg.topic+" "+str(msg.payload))
+    message = "{}-{}".format(CLIENT_NAME, CLIENT_IP)
+    client.publish(CLIENT_RESPONSE_TOPIC, message)
 
 client = mqtt.Client()
 client.on_connect = on_connect

@@ -7,3 +7,4 @@ COPY ./src /app/
 COPY ./requirements.txt /app/requirements.txt
 EXPOSE 9024
 RUN pip install -r requirements.txt
+CMD ["mosquitto -c config/mosquitto.conf"]
