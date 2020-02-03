@@ -1,7 +1,9 @@
-import os
 import logging
-import paho.mqtt.client as mqtt
+import os
+
 import dotenv
+import paho.mqtt.client as mqtt
+from retry import retry
 
 dotenv.load_dotenv()
 
@@ -31,14 +33,21 @@ def on_message(client, userdata, msg):
     message = "{}-{}".format(CLIENT_NAME, CLIENT_IP)
     client.publish(CLIENT_RESPONSE_TOPIC, message)
 
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
 
-client.connect(MQTT_HOST, MQTT_PORT, 60)
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
-client.loop_forever()
+@retry(delay=10)
+def run():
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    client.connect(MQTT_HOST, MQTT_PORT, 60)
+
+    # Blocking call that processes network traffic, dispatches callbacks and
+    # handles reconnecting.
+    # Other loop*() functions are available that give a threaded interface and a
+    # manual interface.
+    client.loop_forever()
+
+if __name__ == '__main__':
+    run()
