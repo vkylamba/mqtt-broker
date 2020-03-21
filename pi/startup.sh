@@ -1,3 +1,3 @@
-source /home/orangepi/penv/activate
-cd /home/orangepi/mqtt-broker/src
-python client.py
+source /home/orangepi/penv/bin/activate
+cd /home/orangepi/mqtt-broker
+python src/client.py
