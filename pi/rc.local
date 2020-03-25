@@ -17,5 +17,5 @@ dmesg -n 1
 
 /usr/local/bin/resize_fs &&
 
-su pi -c /home/orangepi/mqtt-broker/pi/startup.sh
+su pi -c /home/orangepi/mqtt-broker/pi/startup.sh > /tmp/rc.local.log
 exit 0
