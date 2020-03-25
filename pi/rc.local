@@ -15,7 +15,6 @@ echo 0 > /proc/sys/kernel/hung_task_timeout_secs
 
 dmesg -n 1
 
-/usr/local/bin/resize_fs &&
-
+/usr/local/bin/resize_fs && \
 su pi -c /home/orangepi/mqtt-broker/pi/startup.sh > /tmp/rc.local.log
 exit 0
