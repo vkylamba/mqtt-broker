@@ -10,11 +10,13 @@ dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
 logger.info = print
 
-MQTT_HOST = os.getenv("MQTT_HOST")
-MQTT_PORT = int(os.getenv("MQTT_PORT"))
-CLIENT_RESPONSE_TOPIC = os.getenv("CLIENT_RESPONSE_TOPIC")
-CLIENT_COMMAND_TOPIC = os.getenv("CLIENT_COMMAND_TOPIC")
-CLIENT_CONNECTED_TOPIC = os.getenv("CLIENT_CONNECTED_TOPIC")
+MQTT_HOST = os.getenv("MQTT_HOST", "168.119.153.236")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "9024"))
+TEST_CLIENT_NAME = os.getenv("TEST_CLIENT_NAME", "test-client")
+TEST_CLIENT_IP = os.getenv("TEST_CLIENT_IP", "test-client-ip")
+CLIENT_RESPONSE_TOPIC = os.getenv("CLIENT_RESPONSE_TOPIC",  "test-client-resp-topic")
+CLIENT_COMMAND_TOPIC = os.getenv("CLIENT_COMMAND_TOPIC", "test-client-command-topic")
+CLIENT_CONNECTED_TOPIC = os.getenv("CLIENT_CONNECTED_TOPIC", "test-client-connected-topic")
 
 
 # The callback for when the client receives a CONNACK response from the server.
