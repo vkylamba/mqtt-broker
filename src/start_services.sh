@@ -1,2 +1,3 @@
 mosquitto -c config/mosquitto.conf &
-python server.py
+# python server.py
+./server-mqtt
