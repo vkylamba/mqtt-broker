@@ -60,6 +60,10 @@ func readEnvs() {
 func main() {
     readEnvs()
 
+    // Wait for the server to start properly
+    fmt.Println("Waiting for the MQTT broker to start...")
+    time.Sleep(10 * time.Second)
+
     finished := make(chan bool)
 
     port, err := strconv.Atoi(MQTT_PORT)
