@@ -1,4 +1,4 @@
-package main
+package mqtt
 
 import (
 	"fmt"
@@ -57,14 +57,13 @@ func readEnvs() {
 
 }
 
-func main() {
+func StartMqtt(finished chan bool) {
+
+    defer func() {
+        finished <- true
+    }()
+
     readEnvs()
-
-    // Wait for the server to start properly
-    fmt.Println("Waiting for the MQTT broker to start...")
-    time.Sleep(10 * time.Second)
-
-    finished := make(chan bool)
 
     port, err := strconv.Atoi(MQTT_PORT)
     if err != nil {

@@ -1,4 +1,4 @@
-module learning
+module mqttserver
 
 go 1.17
 
