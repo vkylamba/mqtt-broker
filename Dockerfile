@@ -19,6 +19,6 @@ EXPOSE 9024
 
 COPY ./src $APP_HOME
 
-RUN go build server-mqtt.go
+RUN go build main.go
 
 ENTRYPOINT [ "/bin/bash", "start_services.sh"]

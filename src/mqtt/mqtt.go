@@ -17,9 +17,23 @@ var MQTT_PASSWORD string
 var CLIENT_HEARTBEAT_TOPIC string
 var CLIENT_COMMAND_TOPIC string
 
+const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
+
+type SystemInfo struct {
+	NumberOfClients int `json:"clients"`
+}
+
+var SystemInfoData SystemInfo
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-    fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+    messageTopic := msg.Topic()
+    messagePayload := msg.Payload()
+
+    fmt.Printf("Received message: %s from topic: %s\n", messagePayload, messageTopic)
+
+    if messageTopic == CLIENT_COUNT_TOPIC {
+        SystemInfoData.NumberOfClients, _ = strconv.Atoi(string(messagePayload))
+    }
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -87,6 +101,7 @@ func StartMqtt(finished chan bool) {
     }
 
     subscribeAllTopics(client)
+    subscribeActiveClientsTopic(client)
     go publishHeartbeat(client, finished)
     go checkAndPublishCommands(client, finished)
 
@@ -125,6 +140,13 @@ func checkAndPublishCommands(client mqtt.Client, finished chan bool) {
 
 func subscribeAllTopics(client mqtt.Client) {
     topic := "#"
+    token := client.Subscribe(topic, 1, nil)
+    token.Wait()
+    fmt.Printf("Subscribed to topic: %s\n", topic)
+}
+
+func subscribeActiveClientsTopic(client mqtt.Client) {
+    topic := CLIENT_COUNT_TOPIC
     token := client.Subscribe(topic, 1, nil)
     token.Wait()
     fmt.Printf("Subscribed to topic: %s\n", topic)
