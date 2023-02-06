@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -17,13 +18,27 @@ var MQTT_PASSWORD string
 var CLIENT_HEARTBEAT_TOPIC string
 var CLIENT_COMMAND_TOPIC string
 
+const CLIENT_SYSTEM_STATUS_TOPIC_TYPE string = "status"
+const CLIENT_METERS_DATA_TOPIC_TYPE string = "meters-data"
+const CLIENT_MODBUS_DATA_TOPIC_TYPE string = "modbus-data"
+const CLIENT_UPDATE_RESP_TOPIC_TYPE string = "update-response"
+
 const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
 
-type SystemInfo struct {
-	NumberOfClients int `json:"clients"`
+
+type DeviceInfoType struct {
+	deviceName string `json:"name"`
+    groupName string `json:"group"`
+    lastSyncTime time.Time `json:lastSyncTime`
+    topics []string `json:"topics"`
 }
 
-var SystemInfoData SystemInfo
+type SystemInfoType struct {
+	NumberOfClients int `json:"clients"`
+    devices map[string]DeviceInfoType `json:"devices"`
+}
+
+var SystemInfoData SystemInfoType
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
     messageTopic := msg.Topic()
@@ -34,6 +49,30 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
     if messageTopic == CLIENT_COUNT_TOPIC {
         SystemInfoData.NumberOfClients, _ = strconv.Atoi(string(messagePayload))
     }
+
+    // Topic is in the following format for IoT devices:
+    // /Devtest/devices/Dev-test/meters-data
+    topicDataList := strings.Split(messageTopic, "/")
+    topicDataLength := len(topicDataList)
+    if topicDataLength >= 4 {
+        topicType := string(messageTopic[topicDataLength-1])
+        deviceName := string(messageTopic[topicDataLength-2])
+        groupName := string(messageTopic[topicDataLength-3])
+
+        switch topicType {
+        case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
+             CLIENT_METERS_DATA_TOPIC_TYPE,
+             CLIENT_MODBUS_DATA_TOPIC_TYPE,
+             CLIENT_UPDATE_RESP_TOPIC_TYPE:
+            device := findDevice(deviceName, groupName)
+            if !contains(device.topics, topicType) {
+                device.topics = append(device.topics, topicType)
+            }
+            device.lastSyncTime = time.Now().UTC()
+        default:
+            fmt.Printf("Unknown topic %s.\n", topicType)
+        }
+    }
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
@@ -42,6 +81,22 @@ var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
     fmt.Printf("Connect lost: %v\n", err)
+}
+
+func findDevice(groupName string, deviceName string) DeviceInfoType {
+    dev := SystemInfoData.devices[groupName + "/" + deviceName]
+    dev.deviceName = deviceName
+    dev.groupName = groupName
+    return dev
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
 
 func readEnvs() {
