@@ -27,10 +27,11 @@ const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
 
 
 type DeviceInfoType struct {
-	deviceName string `json:"name"`
-    groupName string `json:"group"`
-    lastSyncTime time.Time `json:lastSyncTime`
-    topics []string `json:"topics"`
+	DeviceName string `json:"name"`
+    GroupName string `json:"group"`
+    LastSyncTime time.Time `json:lastSyncTime`
+    Topics []string `json:"topics"`
+    LatestDataByTopic map[string]string
 }
 
 type SystemInfoType struct {
@@ -66,10 +67,13 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
              CLIENT_MODBUS_DATA_TOPIC_TYPE,
              CLIENT_UPDATE_RESP_TOPIC_TYPE:
             device := findDevice(deviceName, groupName)
-            if !contains(device.topics, topicType) {
-                device.topics = append(device.topics, topicType)
+            if !contains(device.Topics, topicType) {
+                if len(device.Topics) == 0 {
+                    device.Topics = make([]string, 0)
+                }
+                device.Topics = append(device.Topics, topicType)
             }
-            device.lastSyncTime = time.Now().UTC()
+            device.LastSyncTime = time.Now().UTC()
         case "heartbeat", "command":
             
         default:
@@ -88,8 +92,8 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 
 func findDevice(groupName string, deviceName string) DeviceInfoType {
     dev := SystemInfoData.Devices[groupName + "/" + deviceName]
-    dev.deviceName = deviceName
-    dev.groupName = groupName
+    dev.DeviceName = deviceName
+    dev.GroupName = groupName
     SystemInfoData.Devices[groupName + "/" + deviceName] = dev
     return dev
 }
