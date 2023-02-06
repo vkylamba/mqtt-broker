@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -25,13 +26,13 @@ const CLIENT_UPDATE_RESP_TOPIC_TYPE string = "update-response"
 
 const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
 
-
+type JsonData map[string]interface{}
 type DeviceInfoType struct {
 	DeviceName string `json:"name"`
     GroupName string `json:"group"`
     LastSyncTime time.Time `json:"lastSyncTime"`
     DataTopics []string `json:"dataTopics"`
-    LatestDataByTopic map[string]string `json:"latestDataByTopic"`
+    LatestDataByTopic map[string]JsonData `json:"latestDataByTopic"`
 }
 
 type SystemInfoType struct {
@@ -71,7 +72,13 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
             if !contains(device.DataTopics, topicType) {
                 device.DataTopics = append(device.DataTopics, topicType)
             }
-            device.LatestDataByTopic[topicType] = string(messagePayload)
+            messageData := string(messagePayload)
+            var objMap = make(JsonData)
+            if err := json.Unmarshal(messagePayload, &objMap); err != nil {
+                fmt.Printf("Invalid json data: %s.\n", messageData)
+                objMap["rawMessage"] = messageData;
+            }
+            device.LatestDataByTopic[topicType] = objMap
             device.LastSyncTime = time.Now()
             
         default:
@@ -94,7 +101,7 @@ func findDevice(groupName string, deviceName string) DeviceInfoType {
     dev.GroupName = groupName
     if dev.DataTopics == nil {
         dev.DataTopics = make([]string, 0)
-        dev.LatestDataByTopic = make(map[string]string)
+        dev.LatestDataByTopic = make(map[string]JsonData)
     }
     SystemInfoData.Devices[groupName + "/" + deviceName] = dev
     return dev
