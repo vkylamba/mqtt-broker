@@ -40,6 +40,7 @@ type SystemInfoType struct {
 
 var SystemInfoData SystemInfoType
 
+
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
     messageTopic := msg.Topic()
     messagePayload := msg.Payload()
@@ -157,6 +158,8 @@ func StartMqtt(finished chan bool) {
     if token := client.Connect(); token.Wait() && token.Error() != nil {
         panic(token.Error())
     }
+
+    SystemInfoData.Devices = make(map[string]DeviceInfoType);
 
     subscribeAllTopics(client)
     subscribeActiveClientsTopic(client)
