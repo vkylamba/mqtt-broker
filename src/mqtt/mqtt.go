@@ -30,7 +30,7 @@ type DeviceInfoType struct {
 	DeviceName string `json:"name"`
     GroupName string `json:"group"`
     LastSyncTime time.Time `json:"lastSyncTime"`
-    Topics []string `json:"topics"`
+    DataTopics []string `json:"dataTopics"`
     LatestDataByTopic map[string]string `json:"latestDataByTopic"`
 }
 
@@ -65,18 +65,14 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
         case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
              CLIENT_METERS_DATA_TOPIC_TYPE,
              CLIENT_MODBUS_DATA_TOPIC_TYPE,
-             CLIENT_UPDATE_RESP_TOPIC_TYPE:
+             CLIENT_UPDATE_RESP_TOPIC_TYPE,
+             "heartbeat", "command":
             device := findDevice(deviceName, groupName)
-            if !contains(device.Topics, topicType) {
-                if len(device.Topics) == 0 {
-                    device.Topics = make([]string, 0)
-                    device.LatestDataByTopic = make(map[string]string, 0)
-                }
-                device.Topics = append(device.Topics, topicType)
-                device.LatestDataByTopic[topicType] = string(messagePayload)
+            if !contains(device.DataTopics, topicType) {
+                device.DataTopics = append(device.DataTopics, topicType)
             }
+            device.LatestDataByTopic[topicType] = string(messagePayload)
             device.LastSyncTime = time.Now()
-        case "heartbeat", "command":
             
         default:
             fmt.Printf("Unknown topic %s.\n", topicType)
@@ -96,6 +92,10 @@ func findDevice(groupName string, deviceName string) DeviceInfoType {
     dev := SystemInfoData.Devices[groupName + "/" + deviceName]
     dev.DeviceName = deviceName
     dev.GroupName = groupName
+    if dev.DataTopics == nil {
+        dev.DataTopics = make([]string, 0)
+        dev.LatestDataByTopic = make(map[string]string)
+    }
     SystemInfoData.Devices[groupName + "/" + deviceName] = dev
     return dev
 }

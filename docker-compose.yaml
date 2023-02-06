@@ -10,6 +10,7 @@ services:
     working_dir: /app
     ports:
       - 9024:9024
+      - 8000:8000
     env_file: src/.env
 
 volumes:
