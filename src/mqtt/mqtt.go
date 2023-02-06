@@ -55,9 +55,9 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
     topicDataList := strings.Split(messageTopic, "/")
     topicDataLength := len(topicDataList)
     if topicDataLength >= 4 {
-        topicType := string(messageTopic[topicDataLength-1])
-        deviceName := string(messageTopic[topicDataLength-2])
-        groupName := string(messageTopic[topicDataLength-3])
+        topicType := string(topicDataList[topicDataLength-1])
+        deviceName := string(topicDataList[topicDataLength-2])
+        groupName := string(topicDataList[topicDataLength-3])
 
         switch topicType {
         case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
@@ -69,6 +69,8 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
                 device.topics = append(device.topics, topicType)
             }
             device.lastSyncTime = time.Now().UTC()
+        case "heartbeat", "command":
+            
         default:
             fmt.Printf("Unknown topic %s.\n", topicType)
         }
