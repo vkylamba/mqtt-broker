@@ -35,7 +35,7 @@ type DeviceInfoType struct {
 
 type SystemInfoType struct {
 	NumberOfClients int `json:"clients"`
-    devices map[string]DeviceInfoType `json:"devices"`
+    Devices map[string]DeviceInfoType `json:"devices"`
 }
 
 var SystemInfoData SystemInfoType
@@ -86,7 +86,7 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func findDevice(groupName string, deviceName string) DeviceInfoType {
-    dev := SystemInfoData.devices[groupName + "/" + deviceName]
+    dev := SystemInfoData.Devices[groupName + "/" + deviceName]
     dev.deviceName = deviceName
     dev.groupName = groupName
     return dev
