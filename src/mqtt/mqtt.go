@@ -89,6 +89,7 @@ func findDevice(groupName string, deviceName string) DeviceInfoType {
     dev := SystemInfoData.Devices[groupName + "/" + deviceName]
     dev.deviceName = deviceName
     dev.groupName = groupName
+    SystemInfoData.Devices[groupName + "/" + deviceName] = dev
     return dev
 }
 
