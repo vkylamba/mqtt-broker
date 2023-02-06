@@ -29,9 +29,9 @@ const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
 type DeviceInfoType struct {
 	DeviceName string `json:"name"`
     GroupName string `json:"group"`
-    LastSyncTime time.Time `json:lastSyncTime`
+    LastSyncTime time.Time `json:"lastSyncTime"`
     Topics []string `json:"topics"`
-    LatestDataByTopic map[string]string
+    LatestDataByTopic map[string]string `json:"latestDataByTopic"`
 }
 
 type SystemInfoType struct {
@@ -70,10 +70,12 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
             if !contains(device.Topics, topicType) {
                 if len(device.Topics) == 0 {
                     device.Topics = make([]string, 0)
+                    device.LatestDataByTopic = make(map[string]string, 0)
                 }
                 device.Topics = append(device.Topics, topicType)
+                device.LatestDataByTopic[topicType] = string(messagePayload)
             }
-            device.LastSyncTime = time.Now().UTC()
+            device.LastSyncTime = time.Now()
         case "heartbeat", "command":
             
         default:
