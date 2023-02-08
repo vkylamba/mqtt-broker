@@ -28,11 +28,11 @@ const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
 
 type JsonData map[string]interface{}
 type DeviceInfoType struct {
-	DeviceName string `json:"name"`
-    GroupName string `json:"group"`
-    LastSyncTime time.Time `json:"lastSyncTime"`
-    DataTopics []string `json:"dataTopics"`
-    LatestDataByTopic map[string]JsonData `json:"latestDataByTopic"`
+	DeviceName         string                `json:"name"`
+    GroupName          string                `json:"group"`
+    LastSyncTime       time.Time             `json:"lastSyncTime"`
+    DataTopics         []string              `json:"dataTopics"`
+    LatestDataByTopic  map[string]JsonData   `json:"latestDataByTopic"`
 }
 
 type SystemInfoType struct {
@@ -68,10 +68,7 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
              CLIENT_MODBUS_DATA_TOPIC_TYPE,
              CLIENT_UPDATE_RESP_TOPIC_TYPE,
              "heartbeat", "command":
-            device := findDevice(deviceName, groupName)
-            if !contains(device.DataTopics, topicType) {
-                device.DataTopics = append(device.DataTopics, topicType)
-            }
+            device := findDevice(groupName, deviceName, topicType)
             messageData := string(messagePayload)
             var objMap = make(JsonData)
             if err := json.Unmarshal(messagePayload, &objMap); err != nil {
@@ -79,7 +76,6 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
                 objMap["rawMessage"] = messageData;
             }
             device.LatestDataByTopic[topicType] = objMap
-            device.LastSyncTime = time.Now()
             
         default:
             fmt.Printf("Unknown topic %s.\n", topicType)
@@ -95,16 +91,20 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
     fmt.Printf("Connect lost: %v\n", err)
 }
 
-func findDevice(groupName string, deviceName string) DeviceInfoType {
+func findDevice(groupName string, deviceName string, topicType string) *DeviceInfoType {
     dev := SystemInfoData.Devices[groupName + "/" + deviceName]
     dev.DeviceName = deviceName
     dev.GroupName = groupName
+    dev.LastSyncTime = time.Now().UTC()
     if dev.DataTopics == nil {
         dev.DataTopics = make([]string, 0)
         dev.LatestDataByTopic = make(map[string]JsonData)
     }
+    if !contains(dev.DataTopics, topicType) {
+        dev.DataTopics = append(dev.DataTopics, topicType)
+    }
     SystemInfoData.Devices[groupName + "/" + deviceName] = dev
-    return dev
+    return &dev
 }
 
 func contains(s []string, str string) bool {
