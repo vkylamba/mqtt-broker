@@ -72,7 +72,9 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
             messageData := string(messagePayload)
             var objMap = make(JsonData)
             if err := json.Unmarshal(messagePayload, &objMap); err != nil {
-                fmt.Printf("Invalid json data: %s.\n", messageData)
+                if (topicType != "heartbeat" && topicType != "command") {
+                    fmt.Printf("Invalid json data: %s.\n", messageData)
+                }
                 objMap["rawMessage"] = messageData;
             }
             device.LatestDataByTopic[topicType] = objMap
