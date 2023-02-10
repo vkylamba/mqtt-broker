@@ -1,8 +1,12 @@
 package mqtt
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -165,6 +169,17 @@ func StartMqtt(finished chan bool) {
         opts.SetUsername(MQTT_USER)
         opts.SetPassword(MQTT_PASSWORD)
     }
+
+    var tlsConfig tls.Config
+    certpool := x509.NewCertPool()
+	ca, err := ioutil.ReadFile("server.crt")
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	certpool.AppendCertsFromPEM(ca)
+	tlsConfig.RootCAs = certpool
+
+    opts.SetTLSConfig(&tlsConfig)
 
     opts.SetDefaultPublishHandler(messagePubHandler)
     opts.OnConnect = connectHandler
