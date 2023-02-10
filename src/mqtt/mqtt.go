@@ -27,6 +27,10 @@ const CLIENT_SYSTEM_STATUS_TOPIC_TYPE string = "status"
 const CLIENT_METERS_DATA_TOPIC_TYPE string = "meters-data"
 const CLIENT_MODBUS_DATA_TOPIC_TYPE string = "modbus-data"
 const CLIENT_UPDATE_RESP_TOPIC_TYPE string = "update-response"
+const CLIENT_HEARTBEAT_RESP_TOPIC_TYPE string = "heartbeat"
+const CLIENT_COMMAND_RESP_TOPIC_TYPE string = "command"
+
+const MEROSS_DEVICE_DATA_TOPIC_TYPE string = "publish"
 
 const CLIENT_COUNT_TOPIC = "$SYS/broker/clients/connected"
 
@@ -71,7 +75,9 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
              CLIENT_METERS_DATA_TOPIC_TYPE,
              CLIENT_MODBUS_DATA_TOPIC_TYPE,
              CLIENT_UPDATE_RESP_TOPIC_TYPE,
-             "heartbeat", "command":
+             MEROSS_DEVICE_DATA_TOPIC_TYPE,
+             CLIENT_HEARTBEAT_RESP_TOPIC_TYPE,
+             CLIENT_COMMAND_RESP_TOPIC_TYPE:
             device := findDevice(groupName, deviceName, topicType)
             messageData := string(messagePayload)
             var objMap = make(JsonData)
@@ -179,7 +185,7 @@ func StartMqtt(finished chan bool) {
 	certpool.AppendCertsFromPEM(ca)
 	tlsConfig.RootCAs = certpool
     tlsConfig.InsecureSkipVerify = true
-    tlsConfig.VerifyConnection = nil
+    // tlsConfig.VerifyConnection = nil
 
     opts.SetTLSConfig(&tlsConfig)
 
