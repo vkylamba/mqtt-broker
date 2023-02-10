@@ -162,7 +162,7 @@ func StartMqtt(finished chan bool) {
         port = 9024
     }
     opts := mqtt.NewClientOptions()
-    opts.AddBroker(fmt.Sprintf("tcp://%s:%d", MQTT_HOST, port))
+    opts.AddBroker(fmt.Sprintf("ssl://%s:%d", MQTT_HOST, port))
     opts.SetClientID("go_mqtt_client")
 
     if MQTT_USER != "" {
