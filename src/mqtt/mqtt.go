@@ -172,12 +172,14 @@ func StartMqtt(finished chan bool) {
 
     var tlsConfig tls.Config
     certpool := x509.NewCertPool()
-	ca, err := ioutil.ReadFile("server.crt")
+	ca, err := ioutil.ReadFile("root_ca.crt")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	certpool.AppendCertsFromPEM(ca)
 	tlsConfig.RootCAs = certpool
+    tlsConfig.InsecureSkipVerify = true
+    tlsConfig.VerifyConnection = nil
 
     opts.SetTLSConfig(&tlsConfig)
 
@@ -188,6 +190,8 @@ func StartMqtt(finished chan bool) {
     if token := client.Connect(); token.Wait() && token.Error() != nil {
         panic(token.Error())
     }
+
+    opts.TLSConfig.InsecureSkipVerify = true
 
     SystemInfoData.Devices = make(map[string]DeviceInfoType);
 
