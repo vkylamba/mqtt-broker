@@ -14,6 +14,11 @@ var API_PORT string
 var BASIC_AUTH_USER string
 var BASIC_AUTH_PASSWORD string
 
+type MessageData struct {
+	TopicName string `json:"topic"`
+	Message   string   `json:"message"`
+}
+
 func readEnvs() {
 	API_HOST = os.Getenv("API_HOST")
 	API_PORT = os.Getenv("API_PORT")
@@ -42,7 +47,20 @@ func getClients(c *gin.Context) {
     c.IndentedJSON(http.StatusOK, mqtt.SystemInfoData)
 }
 
-func StartServer(finished chan bool) {
+// publishMqtt publish to the provided mqtt topic with given data
+func publishMqtt(publishQueue chan map[string]string) func(c *gin.Context) {
+	return func (c *gin.Context) {
+		var messageData MessageData
+    	c.BindJSON(&messageData)
+		mqttData := make(map[string]string)
+		mqttData["topicName"] = messageData.TopicName
+		mqttData["message"] = messageData.Message
+		publishQueue <- mqttData
+		c.String(http.StatusOK, messageData.TopicName)
+	}
+}
+
+func StartServer(finished chan bool, publishQueue chan map[string]string) {
 	readEnvs()
     router := gin.Default()
 
@@ -51,6 +69,7 @@ func StartServer(finished chan bool) {
     }))
 
     authorized.GET("/clients", getClients)
+	authorized.POST("/publish/", publishMqtt(publishQueue))
 
     router.Run(fmt.Sprintf("%v:%v", API_HOST, API_PORT))
 	finished <- true

@@ -157,7 +157,7 @@ func readEnvs() {
 
 }
 
-func StartMqtt(finished chan bool) {
+func StartMqtt(finished chan bool, publishQueue chan map[string]string) {
 
     defer func() {
         finished <- true
@@ -207,6 +207,7 @@ func StartMqtt(finished chan bool) {
     subscribeActiveClientsTopic(client)
     go publishHeartbeat(client, finished)
     go checkAndPublishCommands(client, finished)
+    go publish(client, publishQueue, finished)
 
     // Wait for the go routines to finish
     <- finished
@@ -253,4 +254,19 @@ func subscribeActiveClientsTopic(client mqtt.Client) {
     token := client.Subscribe(topic, 1, nil)
     token.Wait()
     fmt.Printf("Subscribed to topic: %s\n", topic)
+}
+
+func publish(client mqtt.Client, publishQueue chan map[string]string, finished chan bool) {
+
+    defer func() {
+        finished <- true
+    }()
+
+    for {
+        jsonData := <- publishQueue
+        fmt.Printf("Publishing to topic: %s\n", jsonData["topicName"])
+        token := client.Publish(jsonData["topicName"], 0, false, jsonData["message"])
+        token.Wait()
+        time.Sleep(1 * time.Second)
+    }
 }
