@@ -1,0 +1,50 @@
+{
+	"version": 1,
+	"allow_edit": true,
+	"plugins": [],
+	"panes": [
+		{
+			"width": 1,
+			"row": {
+				"3": 1
+			},
+			"col": {
+				"3": 1
+			},
+			"col_width": 1,
+			"widgets": [
+				{
+					"type": "indicator",
+					"settings": {
+						"title": "Status",
+						"value": "datasources[\"systemStatus\"][\"clients\"]",
+						"on_text": "Active",
+						"off_text": "No Connections"
+					}
+				},
+				{
+					"type": "gauge",
+					"settings": {
+						"title": "Clients",
+						"value": "datasources[\"systemStatus\"][\"clients\"]",
+						"min_value": 0,
+						"max_value": "10"
+					}
+				}
+			]
+		}
+	],
+	"datasources": [
+		{
+			"name": "systemStatus",
+			"type": "JSON",
+			"settings": {
+				"url": "/clients",
+				"use_thingproxy": true,
+				"refresh": 30,
+				"method": "GET"
+			}
+		}
+	],
+	"columns": 3
+}

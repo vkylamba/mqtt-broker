@@ -71,6 +71,12 @@ func StartServer(finished chan bool, publishQueue chan map[string]string) {
     authorized.GET("/clients", getClients)
 	authorized.POST("/publish/", publishMqtt(publishQueue))
 
+	authorized.StaticFile("/dashboard-config", "./static/dashboard-config/config.json")
+	authorized.StaticFS("/lib", http.Dir("./static/lib"))
+	authorized.StaticFS("/plugins", http.Dir("./static/plugins"))
+	authorized.StaticFS("/img", http.Dir("./static/img"))
+	authorized.StaticFile("/", "./static/index.html")
+
     router.Run(fmt.Sprintf("%v:%v", API_HOST, API_PORT))
 	finished <- true
 }
