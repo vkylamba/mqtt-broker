@@ -15,8 +15,8 @@ var BASIC_AUTH_USER string
 var BASIC_AUTH_PASSWORD string
 
 type MessageData struct {
-	TopicName string `json:"topic"`
-	Message   string   `json:"message"`
+	TopicName string  `json:"topic"`
+	Message   string  `json:"message"`
 }
 
 func readEnvs() {

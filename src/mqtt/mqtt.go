@@ -264,9 +264,11 @@ func publish(client mqtt.Client, publishQueue chan map[string]string, finished c
 
     for {
         jsonData := <- publishQueue
-        fmt.Printf("Publishing to topic: %s\n", jsonData["topicName"])
-        token := client.Publish(jsonData["topicName"], 0, false, jsonData["message"])
-        token.Wait()
+        fmt.Printf("Publishing to mqtt: %s, %v\n", jsonData["topicName"], jsonData["message"])
+        if (len(jsonData["topicName"]) > 0) {
+            token := client.Publish(jsonData["topicName"], 0, false, jsonData["message"])
+            token.Wait()
+        }
         time.Sleep(1 * time.Second)
     }
 }
