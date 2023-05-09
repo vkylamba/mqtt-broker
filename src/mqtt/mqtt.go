@@ -26,7 +26,8 @@ var CLIENT_COMMAND_TOPIC string
 const CLIENT_SYSTEM_STATUS_TOPIC_TYPE string = "status"
 const CLIENT_METERS_DATA_TOPIC_TYPE string = "meters-data"
 const CLIENT_MODBUS_DATA_TOPIC_TYPE string = "modbus-data"
-const CLIENT_LOGS_RESPONSE_TOPIC_TYPE string = "logs-resp"
+const CLIENT_CMD_RESPONSE_TOPIC_TYPE string = "cmd-resp"
+const CLIENT_CMD_REQUEST_TOPIC_TYPE string = "cmd-req"
 const CLIENT_UPDATE_RESP_TOPIC_TYPE string = "update-response"
 const CLIENT_HEARTBEAT_RESP_TOPIC_TYPE string = "heartbeat"
 const CLIENT_COMMAND_RESP_TOPIC_TYPE string = "command"
@@ -75,7 +76,8 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
         case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
              CLIENT_METERS_DATA_TOPIC_TYPE,
              CLIENT_MODBUS_DATA_TOPIC_TYPE,
-             CLIENT_LOGS_RESPONSE_TOPIC_TYPE,
+             CLIENT_CMD_RESPONSE_TOPIC_TYPE,
+             CLIENT_CMD_REQUEST_TOPIC_TYPE,
              CLIENT_UPDATE_RESP_TOPIC_TYPE,
              MEROSS_DEVICE_DATA_TOPIC_TYPE,
              CLIENT_HEARTBEAT_RESP_TOPIC_TYPE,
