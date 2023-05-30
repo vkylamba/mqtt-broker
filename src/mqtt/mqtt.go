@@ -223,7 +223,7 @@ func publishHeartbeat(client mqtt.Client, finished chan bool) {
 
     for {
         timeNow := time.Now()
-        text := fmt.Sprintf("epoch_ms %v", timeNow.UnixMilli())
+        text := fmt.Sprintf("epoch_ms %v ", timeNow.UnixMilli())
         token := client.Publish(CLIENT_HEARTBEAT_TOPIC, 0, false, text)
         token.Wait()
         time.Sleep(60 * time.Second)
