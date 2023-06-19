@@ -118,18 +118,19 @@ func findDevice(groupName string, deviceName string, topicType string) *DeviceIn
 	dev.DeviceName = deviceName
 	dev.GroupName = groupName
 	dev.LastSyncTime = time.Now().UTC()
+	if dev.DataTopics == nil {
+		dev.DataTopics = make([]DataTopicInfoType, 0)
+	}
 	updateDataTopics(&dev.DataTopics, topicType)
-	dev.LatestDataByTopic = make(map[string]JsonData)
+	if dev.LatestDataByTopic == nil {
+		dev.LatestDataByTopic = make(map[string]JsonData)
+	}
 	SystemInfoData.Devices[groupName+"/"+deviceName] = dev
 	return &dev
 }
 
 func updateDataTopics(dataTopics *[]DataTopicInfoType, topicType string) {
 	topicFound := false
-	if dataTopics == nil {
-		temp := make([]DataTopicInfoType, 0)
-		dataTopics = &temp
-	}
 	for _, v := range *dataTopics {
 		if v.TopicName == topicType {
 			v.LastSyncTime = time.Now().UTC()
