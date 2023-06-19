@@ -131,9 +131,9 @@ func findDevice(groupName string, deviceName string, topicType string) *DeviceIn
 
 func updateDataTopics(dataTopics *[]DataTopicInfoType, topicType string) {
 	topicFound := false
-	for _, v := range *dataTopics {
+	for idx, v := range *dataTopics {
 		if v.TopicName == topicType {
-			v.LastSyncTime = time.Now().UTC()
+			(*dataTopics)[idx].LastSyncTime = time.Now().UTC()
 			topicFound = true
 		}
 	}
