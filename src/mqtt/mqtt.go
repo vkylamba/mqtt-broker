@@ -46,7 +46,7 @@ type DeviceInfoType struct {
 	DeviceName        string              `json:"name"`
 	GroupName         string              `json:"group"`
 	LastSyncTime      time.Time           `json:"lastSyncTime"`
-	DataTopics        DataTopicInfoType   `json:"dataTopics"`
+	DataTopics        []DataTopicInfoType `json:"dataTopics"`
 	LatestDataByTopic map[string]JsonData `json:"latestDataByTopic"`
 }
 
@@ -118,21 +118,32 @@ func findDevice(groupName string, deviceName string, topicType string) *DeviceIn
 	dev.DeviceName = deviceName
 	dev.GroupName = groupName
 	dev.LastSyncTime = time.Now().UTC()
-	dev.DataTopics.TopicName = topicType
-	dev.DataTopics.LastSyncTime = time.Now().UTC()
+	updateDataTopics(&dev.DataTopics, topicType)
 	dev.LatestDataByTopic = make(map[string]JsonData)
 	SystemInfoData.Devices[groupName+"/"+deviceName] = dev
 	return &dev
 }
 
-// func contains(s []string, str string) bool {
-// 	for _, v := range s {
-// 		if v == str {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+func updateDataTopics(dataTopics *[]DataTopicInfoType, topicType string) {
+	topicFound := false
+	if dataTopics == nil {
+		temp := make([]DataTopicInfoType, 0)
+		dataTopics = &temp
+	}
+	for _, v := range *dataTopics {
+		if v.TopicName == topicType {
+			v.LastSyncTime = time.Now().UTC()
+			topicFound = true
+		}
+	}
+	if !topicFound {
+		dataTopic := DataTopicInfoType{
+			TopicName: topicType,
+			LastSyncTime: time.Now().UTC(),
+		}
+		*dataTopics = append(*dataTopics, dataTopic)
+	}
+}
 
 func readEnvs() {
 	MQTT_HOST = os.Getenv("MQTT_HOST")
