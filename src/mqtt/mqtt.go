@@ -160,7 +160,7 @@ func readEnvs() {
 	}
 
 	if len(MQTT_PORT) < 2 {
-		MQTT_PORT = "9024"
+		MQTT_PORT = "8883"
 	}
 
 	if len(CLIENT_HEARTBEAT_TOPIC) < 10 {

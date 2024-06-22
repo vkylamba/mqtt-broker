@@ -7,6 +7,12 @@ services:
     command: "tail -f /dev/null"
     working_dir: /app
     ports:
-      - 9024:9024
+      - 9023:1883
+      - 9024:8883
       - 8000:8000
+      - 8083:8083
+      - 8084:8084
+      - 18083:18083
+      - 4370:4370
+      - 5369:5369
     env_file: src/.env

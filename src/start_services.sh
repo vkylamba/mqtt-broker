@@ -3,5 +3,5 @@ echo -e $ROOT_CA_CERT > root_ca.crt
 echo -e $SERVER_CERT > server.crt
 echo -e $SERVER_KEY >  server.key
 
-./main &
-mosquitto -c config/mosquitto.conf
+/opt/emqx/bin/emqx start
+/opt/emqx/app-server

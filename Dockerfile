@@ -1,4 +1,4 @@
-FROM golang:1.17
+FROM golang:1.17 as gobase
 
 # create directory for the application user
 ENV APP_HOME=/home/application/
@@ -13,12 +13,15 @@ RUN chown -R 1001:0 $APP_HOME
 
 WORKDIR $APP_HOME
 
-RUN apt-get -y update && apt-get -y install mosquitto
-
-EXPOSE 9024
-
 COPY ./src $APP_HOME
 
-RUN go build main.go
+RUN go build -o /bin/app-server main.go
+
+FROM emqx/emqx:5.7.0
+USER root
+
+COPY --from=gobase /bin/app-server app-server
+USER emqx
+EXPOSE 1883 8083 8084 8883 18083 4370 5369
 
 ENTRYPOINT [ "/bin/bash", "start_services.sh"]
