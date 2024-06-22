@@ -21,6 +21,7 @@ FROM emqx/emqx:5.7.0
 USER root
 
 COPY --from=gobase /bin/app-server app-server
+COPY ./src/start_services.sh start_services.sh
 USER emqx
 EXPOSE 1883 8083 8084 8883 18083 4370 5369
 
