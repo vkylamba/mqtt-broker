@@ -25,7 +25,9 @@ var CLIENT_COMMAND_TOPIC string
 
 const CLIENT_SYSTEM_STATUS_TOPIC_TYPE string = "status"
 const CLIENT_METERS_DATA_TOPIC_TYPE string = "meters-data"
+const CLIENT_SENSORS_DATA_TOPIC_TYPE string = "sensors-data"
 const CLIENT_MODBUS_DATA_TOPIC_TYPE string = "modbus-data"
+const CLIENT_DEVICE_PARAMS_TOPIC_TYPE string = "params"
 const CLIENT_CMD_RESPONSE_TOPIC_TYPE string = "cmd-resp"
 const CLIENT_CMD_REQUEST_TOPIC_TYPE string = "cmd-req"
 const CLIENT_UPDATE_REQ_TOPIC_TYPE string = "update-trigger"
@@ -79,7 +81,9 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 		switch topicType {
 		case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
 			CLIENT_METERS_DATA_TOPIC_TYPE,
+			CLIENT_SENSORS_DATA_TOPIC_TYPE,
 			CLIENT_MODBUS_DATA_TOPIC_TYPE,
+			CLIENT_DEVICE_PARAMS_TOPIC_TYPE,
 			CLIENT_CMD_RESPONSE_TOPIC_TYPE,
 			CLIENT_CMD_REQUEST_TOPIC_TYPE,
 			CLIENT_UPDATE_REQ_TOPIC_TYPE,
@@ -252,7 +256,7 @@ func checkAndPublishCommands(client mqtt.Client, finished chan bool) {
 	for {
 		timeNow := time.Now()
 		text := fmt.Sprintf("command %v", timeNow.UnixMilli())
-		token := client.Publish(CLIENT_COMMAND_TOPIC, 0, false, text)
+		token := client.Publish(CLIENT_COMMAND_TOPIC, 2, false, text)
 		token.Wait()
 		time.Sleep(10 * time.Second)
 	}
@@ -282,7 +286,7 @@ func publish(client mqtt.Client, publishQueue chan map[string]string, finished c
 		jsonData := <-publishQueue
 		fmt.Printf("Publishing to mqtt: %s, %v\n", jsonData["topicName"], jsonData["message"])
 		if len(jsonData["topicName"]) > 0 {
-			token := client.Publish(jsonData["topicName"], 0, false, jsonData["message"])
+			token := client.Publish(jsonData["topicName"], 2, false, jsonData["message"])
 			token.Wait()
 		}
 		time.Sleep(1 * time.Second)
