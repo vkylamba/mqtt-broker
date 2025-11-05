@@ -87,16 +87,16 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	// /Devtest/devices/Dev-test/meters-data
 	topicDataList := strings.Split(messageTopic, "/")
 	topicDataLength := len(topicDataList)
-	if topicDataLength >= 4 {
-		groupName := string(topicDataList[0])
-		deviceName := string(topicDataList[2])
-		topicType := string(topicDataList[3])
+	if topicDataLength >= 5 {
+		groupName := string(topicDataList[1])
+		deviceName := string(topicDataList[3])
+		topicType := string(topicDataList[4])
 		fmt.Printf("Group: %s, Device: %s, Topic: %s\n", groupName, deviceName, topicType)
 		deviceType := "mona"
 		if topicDataLength >= 6 {
 			deviceType = "beken"
-			dataType := string(topicDataList[4])
-			cmdType := string(topicDataList[5])
+			dataType := string(topicDataList[5])
+			cmdType := string(topicDataList[6])
 
 			// For beken devices, collect data over 10 seconds period
 			deviceKey := fmt.Sprintf("%s/%s", groupName, deviceName)
