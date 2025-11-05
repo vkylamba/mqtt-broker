@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -57,7 +58,20 @@ type SystemInfoType struct {
 	Devices         map[string]DeviceInfoType `json:"devices"`
 }
 
+type BekenDataCollection struct {
+	DeviceKey string                 `json:"deviceKey"`
+	StartTime time.Time              `json:"startTime"`
+	Data      map[string]interface{} `json:"data"` // dataType as key, message as value
+	Mutex     sync.RWMutex           `json:"-"`
+}
+
+type BekenCollectorType struct {
+	Collections map[string]*BekenDataCollection `json:"collections"` // deviceKey as key
+	Mutex       sync.RWMutex                    `json:"-"`
+}
+
 var SystemInfoData SystemInfoType
+var BekenCollector BekenCollectorType
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	messageTopic := msg.Topic()
@@ -74,9 +88,24 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	topicDataList := strings.Split(messageTopic, "/")
 	topicDataLength := len(topicDataList)
 	if topicDataLength >= 4 {
-		topicType := string(topicDataList[topicDataLength-1])
-		deviceName := string(topicDataList[topicDataLength-2])
-		groupName := string(topicDataList[topicDataLength-4])
+		groupName := string(topicDataList[0])
+		deviceName := string(topicDataList[2])
+		topicType := string(topicDataList[3])
+		fmt.Printf("Group: %s, Device: %s, Topic: %s\n", groupName, deviceName, topicType)
+		deviceType := "mona"
+		if topicDataLength >= 6 {
+			deviceType = "beken"
+			dataType := string(topicDataList[4])
+			cmdType := string(topicDataList[5])
+
+			// For beken devices, collect data over 10 seconds period
+			deviceKey := fmt.Sprintf("%s/%s", groupName, deviceName)
+			messageData := string(messagePayload)
+			addBekenData(deviceKey, dataType, messageData)
+
+			// Continue with normal processing as well
+			fmt.Printf("Beken device - DataType: %s, CmdType: %s\n", dataType, cmdType)
+		}
 
 		switch topicType {
 		case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
@@ -93,6 +122,15 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			CLIENT_COMMAND_RESP_TOPIC_TYPE:
 			device := findDevice(groupName, deviceName, topicType)
 			messageData := string(messagePayload)
+			if deviceType == "beken" {
+				deviceKey := fmt.Sprintf("%s/%s", groupName, deviceName)
+				collection, exists := BekenCollector.Collections[deviceKey]
+				if exists {
+					if jsonBytes, err := json.Marshal(collection.Data); err == nil {
+						messageData = string(jsonBytes)
+					}
+				}
+			}
 			var objMap = make(JsonData)
 			if err := json.Unmarshal(messagePayload, &objMap); err != nil {
 				if topicType != "heartbeat" && topicType != "command" {
@@ -143,11 +181,36 @@ func updateDataTopics(dataTopics *[]DataTopicInfoType, topicType string) {
 	}
 	if !topicFound {
 		dataTopic := DataTopicInfoType{
-			TopicName: topicType,
+			TopicName:    topicType,
 			LastSyncTime: time.Now().UTC(),
 		}
 		*dataTopics = append(*dataTopics, dataTopic)
 	}
+}
+
+func initBekenCollector() {
+	BekenCollector.Collections = make(map[string]*BekenDataCollection)
+}
+
+func addBekenData(deviceKey string, dataType string, message string) {
+	BekenCollector.Mutex.Lock()
+	defer BekenCollector.Mutex.Unlock()
+
+	collection, exists := BekenCollector.Collections[deviceKey]
+	if !exists {
+		collection = &BekenDataCollection{
+			DeviceKey: deviceKey,
+			StartTime: time.Now().UTC(),
+			Data:      make(map[string]interface{}),
+		}
+		BekenCollector.Collections[deviceKey] = collection
+	}
+
+	collection.Mutex.Lock()
+	collection.Data[dataType] = message
+	collection.Mutex.Unlock()
+
+	fmt.Printf("Added beken data for device %s, dataType: %s, message: %s\n", deviceKey, dataType, message)
 }
 
 func readEnvs() {
@@ -222,6 +285,7 @@ func StartMqtt(finished chan bool, publishQueue chan map[string]string) {
 	opts.TLSConfig.InsecureSkipVerify = true
 
 	SystemInfoData.Devices = make(map[string]DeviceInfoType)
+	initBekenCollector()
 
 	subscribeAllTopics(client)
 	subscribeActiveClientsTopic(client)
