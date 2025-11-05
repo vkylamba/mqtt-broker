@@ -87,13 +87,13 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	// /Devtest/devices/Dev-test/meters-data
 	topicDataList := strings.Split(messageTopic, "/")
 	topicDataLength := len(topicDataList)
-	if topicDataLength >= 5 {
+	if topicDataLength > 4 {
 		groupName := string(topicDataList[1])
 		deviceName := string(topicDataList[3])
 		topicType := string(topicDataList[4])
 		fmt.Printf("Group: %s, Device: %s, Topic: %s\n", groupName, deviceName, topicType)
 		deviceType := "mona"
-		if topicDataLength >= 6 {
+		if topicDataLength > 5 {
 			deviceType = "beken"
 			dataType := string(topicDataList[5])
 
