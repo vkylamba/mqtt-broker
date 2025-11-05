@@ -91,11 +91,13 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 		groupName := string(topicDataList[1])
 		deviceName := string(topicDataList[3])
 		topicType := string(topicDataList[4])
-		fmt.Printf("Group: %s, Device: %s, Topic: %s\n", groupName, deviceName, topicType)
 		deviceType := "mona"
 		if topicDataLength > 5 {
+			groupName = string(topicDataList[0])
+			deviceName = string(topicDataList[2])
+			topicType = string(topicDataList[3])
 			deviceType = "beken"
-			dataType := string(topicDataList[5])
+			dataType := string(topicDataList[4])
 
 			// For beken devices, collect data over 10 seconds period
 			deviceKey := fmt.Sprintf("%s/%s", groupName, deviceName)
@@ -105,6 +107,7 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			// Continue with normal processing as well
 			fmt.Printf("Beken device - DataType: %s\n", dataType)
 		}
+		fmt.Printf("Group: %s, Device: %s, Topic: %s\n", groupName, deviceName, topicType)
 
 		switch topicType {
 		case CLIENT_SYSTEM_STATUS_TOPIC_TYPE,
