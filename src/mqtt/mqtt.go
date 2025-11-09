@@ -92,17 +92,22 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 		deviceName := string(topicDataList[3])
 		topicType := string(topicDataList[4])
 		deviceType := "mona"
-		if topicDataLength > 5 {
+		dataType := "none"
+		if topicDataLength > 6 {
+			deviceType = "esphome"
+			dataType = string(topicDataList[6])
+		} else if topicDataLength > 5 {
 			deviceType = "beken"
-			dataType := string(topicDataList[5])
-
-			// For beken devices, collect data over 10 seconds period
+			dataType = string(topicDataList[5])
+		}
+		if dataType != "none" {
+			// For beken/esphome devices, collect data over 10 seconds period
 			deviceKey := fmt.Sprintf("%s/%s", groupName, deviceName)
 			messageData := string(messagePayload)
 			addBekenData(deviceKey, dataType, messageData)
 
 			// Continue with normal processing as well
-			fmt.Printf("Beken device - DataType: %s\n", dataType)
+			fmt.Printf("Beken/Esphome device - DataType: %s\n", dataType)
 		}
 		fmt.Printf("Group: %s, Device: %s, Topic: %s\n", groupName, deviceName, topicType)
 
@@ -122,7 +127,7 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			device := findDevice(groupName, deviceName, topicType)
 			messageData := string(messagePayload)
 			var objMap = make(JsonData)
-			if deviceType == "beken" {
+			if deviceType == "beken" || deviceType == "esphome" {
 				deviceKey := fmt.Sprintf("%s/%s", groupName, deviceName)
 				collection, exists := BekenCollector.Collections[deviceKey]
 				if exists {
